@@ -1914,9 +1914,17 @@ byte getNoteNumber(byte split, byte col, byte row) {
     noteCol = (NUMCOLS - col);
   }
 
-  notenum = determineRowOffsetNote(split, row) + noteCol - 1;
+  if (Global.rowOffset == ROWOFFSET_WHOLETONE || Global.rowOffset == ROWOFFSET_WHOLETONE_ALT) {
+    notenum = determineRowOffsetNote(split, row) + ((noteCol - 1) * 2);
+    notenum = notenum - (Split[split].transposeLights * 2);
+  }
 
-  return notenum - Split[split].transposeLights;
+  else {
+    notenum = determineRowOffsetNote(split, row) + noteCol - 1;
+    notenum = notenum - Split[split].transposeLights;
+  }
+
+  return notenum;
 }
 
 short determineRowOffsetNote(byte split, byte row) {
@@ -1962,6 +1970,22 @@ short determineRowOffsetNote(byte split, byte row) {
   else if (Global.rowOffset == ROWOFFSET_GUITAR) {    // if rowOffset is set to guitar tuning...
     return Global.guitarTuning[row];
   }
+
+  // Tuning where the 12 notes of the octave are split 
+  // using the two wholetone scales over two rows
+  // C# D# F  G  A  B
+  // C  D  E  F# G# A#
+  else if (Global.rowOffset == ROWOFFSET_WHOLETONE) {
+    return lowest + ((row / 2) * 12) + (wholetone_offset * (row % 2));
+  }
+
+
+  // C  D  E  F# G# A#
+  // B  C# D# F  G  A 
+  else if (Global.rowOffset == ROWOFFSET_WHOLETONE_ALT) {
+    return lowest + ((row / 2) * 12) + (wholetone_offset * (row % 2)) - 1;
+  }
+
   else {                                              // Global.rowOffset == ROWOFFSET_ZERO, rowOffset is set to zero...
     return lowest;
   }
